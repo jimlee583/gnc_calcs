@@ -1,0 +1,121 @@
+/* 
+ * Shared styles for calculation cards
+ * These styles are used by AttitudeDynamicsCard, OrbitalMotionCard, etc.
+ */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.inputPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.outputPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding-left: var(--spacing-lg);
+  border-left: 2px solid var(--color-border);
+}
+
+@media (max-width: 899px) {
+  .outputPanel {
+    padding-left: 0;
+    padding-top: var(--spacing-lg);
+    border-left: none;
+    border-top: 2px solid var(--color-border);
+  }
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: var(--spacing-md);
+}
+
+/* Assumptions section */
+.assumptions {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-muted);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-border);
+}
+
+.assumptionsTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-sm);
+}
+
+.assumptionsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.assumptionsList li {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  padding-left: var(--spacing-md);
+  position: relative;
+}
+
+.assumptionsList li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-text-muted);
+}
+
+/* Status indicator for bounded/unbounded motion */
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-muted);
+  border-radius: var(--radius-md);
+}
+
+.statusLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.statusGood {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #059669;
+  background: #D1FAE5;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.statusWarning {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #D97706;
+  background: #FEF3C7;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+}

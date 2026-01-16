@@ -1,0 +1,47 @@
+# GNC Calculations - Local Development Docker Compose
+#
+# This configuration runs the backend and frontend as separate services
+# for development. Hot-reloading is enabled for both.
+#
+# Usage:
+#   docker-compose up        # Start all services
+#   docker-compose up -d     # Start in background
+#   docker-compose down      # Stop all services
+#   docker-compose logs -f   # View logs
+
+services:
+  # Backend API (FastAPI with hot-reload)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app:ro
+    environment:
+      - DEBUG=true
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Frontend (Vite dev server with HMR)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+    environment:
+      - VITE_API_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy

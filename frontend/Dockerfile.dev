@@ -1,0 +1,19 @@
+# Frontend Development Dockerfile
+#
+# Runs Vite dev server with HMR for development.
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source (will be overridden by volume mount in dev)
+COPY . .
+
+EXPOSE 5173
+
+# Run Vite dev server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
