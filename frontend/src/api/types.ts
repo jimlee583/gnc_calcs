@@ -163,6 +163,68 @@ export interface RelativeMotionOutput {
 }
 
 // =============================================================================
+// Trajectory Visualization Types
+// =============================================================================
+
+/**
+ * A single point in a trajectory.
+ */
+export interface TrajectoryPoint {
+  x: number;
+  y: number;
+  z?: number | null;
+  t: number;
+}
+
+/**
+ * Input for orbital trajectory generation.
+ */
+export interface OrbitalTrajectoryInput {
+  semi_major_axis: number;
+  eccentricity: number;
+  central_body_radius?: number;
+  num_points?: number;
+}
+
+/**
+ * Output from orbital trajectory generation.
+ */
+export interface OrbitalTrajectoryOutput {
+  points: TrajectoryPoint[];
+  semi_major_axis: number;
+  semi_minor_axis: number;
+  periapsis_radius: number;
+  apoapsis_radius: number;
+  central_body_radius: number;
+}
+
+/**
+ * Input for relative motion trajectory generation.
+ */
+export interface RelativeTrajectoryInput {
+  chief_semi_major_axis: number;
+  gravitational_parameter?: number;
+  x0: number;
+  y0: number;
+  z0: number;
+  x_dot0: number;
+  y_dot0: number;
+  z_dot0: number;
+  num_orbits?: number;
+  num_points?: number;
+}
+
+/**
+ * Output from relative motion trajectory generation.
+ */
+export interface RelativeTrajectoryOutput {
+  points: TrajectoryPoint[];
+  orbital_period: number;
+  is_bounded: boolean;
+  max_range: number;
+}
+
+// =============================================================================
 // API Error Type
 // =============================================================================
 

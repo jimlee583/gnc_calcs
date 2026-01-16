@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { calculateOrbit } from '../../api/gnc';
-import type { OrbitalInput, OrbitalOutput } from '../../api/types';
+import { calculateOrbit, getOrbitalTrajectory } from '../../api/gnc';
+import type { OrbitalInput, OrbitalOutput, OrbitalTrajectoryOutput } from '../../api/types';
 import {
   GncCard,
   CardSection,
@@ -8,6 +8,7 @@ import {
   CardOutput,
   CardButton,
 } from './GncCard';
+import { TrajectoryPlot } from '../TrajectoryPlot';
 import styles from './CalculationCard.module.css';
 
 /**
@@ -37,6 +38,7 @@ export function OrbitalMotionCard() {
   });
 
   const [result, setResult] = useState<OrbitalOutput | null>(null);
+  const [trajectory, setTrajectory] = useState<OrbitalTrajectoryOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,8 +53,18 @@ export function OrbitalMotionCard() {
     setIsLoading(true);
     setError(null);
     try {
-      const output = await calculateOrbit(inputs);
+      // Calculate orbital parameters and generate trajectory in parallel
+      const [output, traj] = await Promise.all([
+        calculateOrbit(inputs),
+        getOrbitalTrajectory({
+          semi_major_axis: inputs.semi_major_axis,
+          eccentricity: inputs.eccentricity,
+          central_body_radius: inputs.central_body_radius,
+          num_points: 120,
+        }),
+      ]);
       setResult(output);
+      setTrajectory(traj);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Calculation failed');
     } finally {
@@ -131,6 +143,24 @@ export function OrbitalMotionCard() {
 
         {result && (
           <div className={styles.outputPanel}>
+            {/* Orbit Visualization */}
+            {trajectory && (
+              <div className={styles.trajectorySection}>
+                <TrajectoryPlot
+                  points={trajectory.points}
+                  width={380}
+                  height={280}
+                  title="Orbit Shape (Orbital Plane)"
+                  xLabel="X [km]"
+                  yLabel="Y [km]"
+                  showOrigin={true}
+                  originRadius={trajectory.central_body_radius}
+                  lineColor="var(--color-primary)"
+                  showEndpoints={false}
+                />
+              </div>
+            )}
+
             <CardSection title="Orbital Period">
               <CardOutput
                 label="Period"

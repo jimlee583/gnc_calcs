@@ -168,3 +168,61 @@ class RelativeMotionOutput(BaseModel):
     drift_rate: float = Field(..., description="Secular drift rate in y-direction [km/orbit]")
 
     assumptions: list[str] = Field(default_factory=list, description="Assumptions used in calculation")
+
+
+# =============================================================================
+# Trajectory Visualization Schemas
+# =============================================================================
+
+
+class TrajectoryPoint(BaseModel):
+    """A single point in a trajectory."""
+    
+    x: float = Field(..., description="X coordinate")
+    y: float = Field(..., description="Y coordinate")
+    z: float | None = Field(None, description="Z coordinate (optional for 2D plots)")
+    t: float = Field(..., description="Time [s]")
+
+
+class OrbitalTrajectoryInput(BaseModel):
+    """Input for generating orbital trajectory points."""
+    
+    semi_major_axis: float = Field(..., description="Semi-major axis [km]", gt=0)
+    eccentricity: float = Field(..., description="Orbital eccentricity", ge=0, lt=1)
+    central_body_radius: float = Field(6378.137, description="Central body radius [km]", gt=0)
+    num_points: int = Field(100, description="Number of trajectory points", ge=10, le=500)
+
+
+class OrbitalTrajectoryOutput(BaseModel):
+    """Output containing orbital trajectory points."""
+    
+    points: list[TrajectoryPoint] = Field(..., description="Trajectory points in orbital plane")
+    semi_major_axis: float = Field(..., description="Semi-major axis [km]")
+    semi_minor_axis: float = Field(..., description="Semi-minor axis [km]")
+    periapsis_radius: float = Field(..., description="Periapsis radius [km]")
+    apoapsis_radius: float = Field(..., description="Apoapsis radius [km]")
+    central_body_radius: float = Field(..., description="Central body radius [km]")
+
+
+class RelativeTrajectoryInput(BaseModel):
+    """Input for generating relative motion trajectory."""
+    
+    chief_semi_major_axis: float = Field(..., description="Chief orbit semi-major axis [km]", gt=0)
+    gravitational_parameter: float = Field(398600.4418, description="Gravitational parameter [km³/s²]", gt=0)
+    x0: float = Field(..., description="Initial radial position [km]")
+    y0: float = Field(..., description="Initial in-track position [km]")
+    z0: float = Field(..., description="Initial cross-track position [km]")
+    x_dot0: float = Field(..., description="Initial radial velocity [km/s]")
+    y_dot0: float = Field(..., description="Initial in-track velocity [km/s]")
+    z_dot0: float = Field(..., description="Initial cross-track velocity [km/s]")
+    num_orbits: float = Field(1.0, description="Number of orbits to propagate", gt=0, le=10)
+    num_points: int = Field(100, description="Number of trajectory points", ge=10, le=500)
+
+
+class RelativeTrajectoryOutput(BaseModel):
+    """Output containing relative motion trajectory."""
+    
+    points: list[TrajectoryPoint] = Field(..., description="Trajectory points in LVLH frame")
+    orbital_period: float = Field(..., description="Orbital period [s]")
+    is_bounded: bool = Field(..., description="Whether trajectory is bounded")
+    max_range: float = Field(..., description="Maximum range from chief [km]")

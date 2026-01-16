@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { calculateRelativeMotion } from '../../api/gnc';
-import type { RelativeMotionInput, RelativeMotionOutput } from '../../api/types';
+import { calculateRelativeMotion, getRelativeTrajectory } from '../../api/gnc';
+import type { RelativeMotionInput, RelativeMotionOutput, RelativeTrajectoryOutput } from '../../api/types';
 import {
   GncCard,
   CardSection,
@@ -8,6 +8,7 @@ import {
   CardOutput,
   CardButton,
 } from './GncCard';
+import { TrajectoryPlot } from '../TrajectoryPlot';
 import styles from './CalculationCard.module.css';
 
 /**
@@ -29,7 +30,6 @@ import styles from './CalculationCard.module.css';
  * 
  * TODO: Add Yamanaka-Ankersen STM for eccentric chief orbits
  * TODO: Add impulsive maneuver planning
- * TODO: Add trajectory visualization
  */
 export function RelativeMotionCard() {
   // Input state - typical rendezvous scenario
@@ -46,6 +46,7 @@ export function RelativeMotionCard() {
   });
 
   const [result, setResult] = useState<RelativeMotionOutput | null>(null);
+  const [trajectory, setTrajectory] = useState<RelativeTrajectoryOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,8 +61,24 @@ export function RelativeMotionCard() {
     setIsLoading(true);
     setError(null);
     try {
-      const output = await calculateRelativeMotion(inputs);
+      // Calculate final state and generate trajectory in parallel
+      const [output, traj] = await Promise.all([
+        calculateRelativeMotion(inputs),
+        getRelativeTrajectory({
+          chief_semi_major_axis: inputs.chief_semi_major_axis,
+          gravitational_parameter: inputs.gravitational_parameter,
+          x0: inputs.x0,
+          y0: inputs.y0,
+          z0: inputs.z0,
+          x_dot0: inputs.x_dot0,
+          y_dot0: inputs.y_dot0,
+          z_dot0: inputs.z_dot0,
+          num_orbits: 1.5,
+          num_points: 150,
+        }),
+      ]);
       setResult(output);
+      setTrajectory(traj);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Calculation failed');
     } finally {
@@ -160,6 +177,22 @@ export function RelativeMotionCard() {
 
         {result && (
           <div className={styles.outputPanel}>
+            {/* Trajectory Visualization */}
+            {trajectory && (
+              <div className={styles.trajectorySection}>
+                <TrajectoryPlot
+                  points={trajectory.points.map(p => ({ x: p.y, y: p.x, t: p.t }))}
+                  width={380}
+                  height={280}
+                  title="In-Plane Trajectory (LVLH)"
+                  xLabel="In-track [km]"
+                  yLabel="Radial [km]"
+                  showOrigin={true}
+                  lineColor="var(--color-primary)"
+                />
+              </div>
+            )}
+
             <CardSection title="Final Position (LVLH)">
               <CardOutput
                 label="x (radial)"
