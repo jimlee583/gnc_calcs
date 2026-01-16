@@ -1,0 +1,133 @@
+/* TrajectoryPlot Component Styles */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.svg {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 200px;
+  background: var(--color-bg-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Grid */
+.grid line {
+  stroke: var(--color-grid);
+  stroke-width: 1;
+  stroke-dasharray: 2, 4;
+}
+
+/* Axes */
+.axes line {
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+}
+
+/* Tick labels */
+.tickLabels text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--color-text-muted);
+}
+
+/* Axis labels */
+.axisLabels text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--color-text-secondary);
+}
+
+/* Origin marker */
+.origin circle {
+  fill: var(--color-text-muted);
+}
+
+.origin line {
+  stroke: var(--color-text-muted);
+  stroke-width: 1;
+}
+
+/* Central body (planet) */
+.centralBody {
+  fill: #B0C4DE;
+  fill-opacity: 0.3;
+  stroke: #6B8CAE;
+  stroke-width: 1.5;
+}
+
+/* Trajectory path */
+.trajectory {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Endpoint markers */
+.startMarker {
+  fill: #059669;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.endMarker {
+  fill: #DC2626;
+  stroke: white;
+  stroke-width: 2;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: var(--spacing-lg);
+  font-size: var(--font-size-xs);
+}
+
+.legendStart,
+.legendEnd {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.legendStart::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #059669;
+}
+
+.legendEnd::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #DC2626;
+}

@@ -18,12 +18,17 @@ from app.schemas.gnc import (
     AttitudeOutput,
     OrbitalInput,
     OrbitalOutput,
+    OrbitalTrajectoryInput,
+    OrbitalTrajectoryOutput,
     RelativeMotionInput,
     RelativeMotionOutput,
+    RelativeTrajectoryInput,
+    RelativeTrajectoryOutput,
 )
 from app.services.gnc.attitude_dynamics import compute_attitude_dynamics
 from app.services.gnc.orbital_dynamics import compute_orbital_dynamics
 from app.services.gnc.relative_motion import compute_relative_motion
+from app.services.gnc.trajectory import generate_orbital_trajectory, generate_relative_trajectory
 
 router = APIRouter()
 
@@ -83,3 +88,40 @@ async def calculate_relative_motion(inputs: RelativeMotionInput) -> RelativeMoti
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Calculation error: {str(e)}")
+
+
+# =============================================================================
+# Trajectory Visualization Endpoints
+# =============================================================================
+
+
+@router.post("/orbit/trajectory", response_model=OrbitalTrajectoryOutput)
+async def get_orbital_trajectory(inputs: OrbitalTrajectoryInput) -> OrbitalTrajectoryOutput:
+    """
+    Generate trajectory points for orbital visualization.
+    
+    Returns an array of (x, y) points tracing the orbit in the orbital plane,
+    along with geometric parameters for plotting the central body.
+    """
+    try:
+        return generate_orbital_trajectory(inputs)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Trajectory generation error: {str(e)}")
+
+
+@router.post("/relative/trajectory", response_model=RelativeTrajectoryOutput)
+async def get_relative_trajectory(inputs: RelativeTrajectoryInput) -> RelativeTrajectoryOutput:
+    """
+    Generate trajectory points for relative motion visualization.
+    
+    Returns an array of (x, y, z) points in the LVLH frame showing the
+    deputy's path relative to the chief spacecraft over multiple orbits.
+    """
+    try:
+        return generate_relative_trajectory(inputs)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Trajectory generation error: {str(e)}")

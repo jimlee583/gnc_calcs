@@ -11,8 +11,12 @@ import type {
   AttitudeOutput,
   OrbitalInput,
   OrbitalOutput,
+  OrbitalTrajectoryInput,
+  OrbitalTrajectoryOutput,
   RelativeMotionInput,
   RelativeMotionOutput,
+  RelativeTrajectoryInput,
+  RelativeTrajectoryOutput,
 } from './types';
 
 const API_BASE = '/api/gnc';
@@ -74,4 +78,22 @@ export async function calculateRelativeMotion(
   input: RelativeMotionInput
 ): Promise<RelativeMotionOutput> {
   return apiCall<RelativeMotionInput, RelativeMotionOutput>('/relative', input);
+}
+
+/**
+ * Generate orbital trajectory points for visualization.
+ */
+export async function getOrbitalTrajectory(
+  input: OrbitalTrajectoryInput
+): Promise<OrbitalTrajectoryOutput> {
+  return apiCall<OrbitalTrajectoryInput, OrbitalTrajectoryOutput>('/orbit/trajectory', input);
+}
+
+/**
+ * Generate relative motion trajectory points for visualization.
+ */
+export async function getRelativeTrajectory(
+  input: RelativeTrajectoryInput
+): Promise<RelativeTrajectoryOutput> {
+  return apiCall<RelativeTrajectoryInput, RelativeTrajectoryOutput>('/relative/trajectory', input);
 }
