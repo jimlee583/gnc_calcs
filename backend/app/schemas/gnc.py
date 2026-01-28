@@ -221,8 +221,152 @@ class RelativeTrajectoryInput(BaseModel):
 
 class RelativeTrajectoryOutput(BaseModel):
     """Output containing relative motion trajectory."""
-    
+
     points: list[TrajectoryPoint] = Field(..., description="Trajectory points in LVLH frame")
     orbital_period: float = Field(..., description="Orbital period [s]")
     is_bounded: bool = Field(..., description="Whether trajectory is bounded")
     max_range: float = Field(..., description="Maximum range from chief [km]")
+
+
+# =============================================================================
+# Quaternion Attitude Schemas
+# =============================================================================
+
+
+class EulerAngles(BaseModel):
+    """Euler angles in both radians and degrees."""
+
+    roll_rad: float = Field(..., description="Roll angle (rotation about X) [rad]")
+    pitch_rad: float = Field(..., description="Pitch angle (rotation about Y) [rad]")
+    yaw_rad: float = Field(..., description="Yaw angle (rotation about Z) [rad]")
+    roll_deg: float = Field(..., description="Roll angle [deg]")
+    pitch_deg: float = Field(..., description="Pitch angle [deg]")
+    yaw_deg: float = Field(..., description="Yaw angle [deg]")
+
+
+class QuaternionInput(BaseModel):
+    """
+    Input for quaternion operations and kinematics.
+
+    Quaternion convention: q = [q0, q1, q2, q3] = [scalar, vector]
+    where q0 is the scalar part and [q1, q2, q3] is the vector part.
+
+    The quaternion represents rotation from inertial to body frame.
+    """
+
+    # Quaternion components
+    q0: float = Field(..., description="Quaternion scalar component (w)")
+    q1: float = Field(..., description="Quaternion x component")
+    q2: float = Field(..., description="Quaternion y component")
+    q3: float = Field(..., description="Quaternion z component")
+
+    # Optional angular velocity for computing derivative
+    omega_x: float | None = Field(None, description="Angular velocity about X-axis [rad/s]")
+    omega_y: float | None = Field(None, description="Angular velocity about Y-axis [rad/s]")
+    omega_z: float | None = Field(None, description="Angular velocity about Z-axis [rad/s]")
+
+
+class QuaternionOutput(BaseModel):
+    """Output from quaternion operations."""
+
+    # Normalized quaternion
+    q0: float = Field(..., description="Normalized quaternion scalar component")
+    q1: float = Field(..., description="Normalized quaternion x component")
+    q2: float = Field(..., description="Normalized quaternion y component")
+    q3: float = Field(..., description="Normalized quaternion z component")
+
+    # Quaternion derivative (if angular velocity was provided)
+    q0_dot: float = Field(..., description="Quaternion derivative scalar component [1/s]")
+    q1_dot: float = Field(..., description="Quaternion derivative x component [1/s]")
+    q2_dot: float = Field(..., description="Quaternion derivative y component [1/s]")
+    q3_dot: float = Field(..., description="Quaternion derivative z component [1/s]")
+
+    # Euler angle representation
+    euler_angles: EulerAngles = Field(..., description="Equivalent Euler angles (3-2-1 sequence)")
+
+    # Direction Cosine Matrix (row-major, flattened)
+    dcm: list[float] = Field(..., description="Direction Cosine Matrix (3x3, row-major flattened)")
+
+    # Quaternion properties
+    magnitude: float = Field(..., description="Quaternion magnitude (should be 1 for unit quaternion)")
+    is_normalized: bool = Field(..., description="Whether input quaternion was already normalized")
+
+    assumptions: list[str] = Field(default_factory=list, description="Conventions and assumptions")
+
+
+class AttitudePropagationInput(BaseModel):
+    """
+    Input for attitude propagation over time.
+
+    Combines initial quaternion state with spacecraft inertia properties
+    to propagate attitude using RK4 integration.
+    """
+
+    # Initial quaternion (will be normalized)
+    q0: float = Field(1.0, description="Initial quaternion scalar component")
+    q1: float = Field(0.0, description="Initial quaternion x component")
+    q2: float = Field(0.0, description="Initial quaternion y component")
+    q3: float = Field(0.0, description="Initial quaternion z component")
+
+    # Initial angular velocity [rad/s]
+    omega_x: float = Field(..., description="Initial angular velocity about X-axis [rad/s]")
+    omega_y: float = Field(..., description="Initial angular velocity about Y-axis [rad/s]")
+    omega_z: float = Field(..., description="Initial angular velocity about Z-axis [rad/s]")
+
+    # Spacecraft inertia [kg·m²]
+    inertia_x: float = Field(..., description="Principal moment of inertia about X-axis [kg·m²]", gt=0)
+    inertia_y: float = Field(..., description="Principal moment of inertia about Y-axis [kg·m²]", gt=0)
+    inertia_z: float = Field(..., description="Principal moment of inertia about Z-axis [kg·m²]", gt=0)
+
+    # Applied torque [N·m] (constant during propagation)
+    torque_x: float = Field(0.0, description="Applied torque about X-axis [N·m]")
+    torque_y: float = Field(0.0, description="Applied torque about Y-axis [N·m]")
+    torque_z: float = Field(0.0, description="Applied torque about Z-axis [N·m]")
+
+    # Propagation parameters
+    propagation_time: float = Field(..., description="Total propagation time [s]", gt=0)
+    num_steps: int = Field(100, description="Number of integration steps", ge=10, le=10000)
+
+
+class AttitudeStatePoint(BaseModel):
+    """A single point in the attitude propagation time history."""
+
+    t: float = Field(..., description="Time [s]")
+
+    # Quaternion
+    q0: float = Field(..., description="Quaternion scalar component")
+    q1: float = Field(..., description="Quaternion x component")
+    q2: float = Field(..., description="Quaternion y component")
+    q3: float = Field(..., description="Quaternion z component")
+
+    # Angular velocity
+    omega_x: float = Field(..., description="Angular velocity about X-axis [rad/s]")
+    omega_y: float = Field(..., description="Angular velocity about Y-axis [rad/s]")
+    omega_z: float = Field(..., description="Angular velocity about Z-axis [rad/s]")
+
+    # Euler angles for visualization
+    roll_deg: float = Field(..., description="Roll angle [deg]")
+    pitch_deg: float = Field(..., description="Pitch angle [deg]")
+    yaw_deg: float = Field(..., description="Yaw angle [deg]")
+
+    # Conservation quantities
+    rotational_kinetic_energy: float = Field(..., description="Rotational kinetic energy [J]")
+    angular_momentum_magnitude: float = Field(..., description="Angular momentum magnitude [kg·m²/s]")
+
+
+class AttitudePropagationOutput(BaseModel):
+    """Output from attitude propagation."""
+
+    states: list[AttitudeStatePoint] = Field(..., description="Time history of attitude states")
+    time_step: float = Field(..., description="Integration time step [s]")
+    integration_method: str = Field(..., description="Integration method used")
+
+    # Conservation error (for torque-free motion)
+    energy_conservation_error: float | None = Field(
+        None, description="Relative error in energy conservation (torque-free only)"
+    )
+    momentum_conservation_error: float | None = Field(
+        None, description="Relative error in momentum conservation (torque-free only)"
+    )
+
+    assumptions: list[str] = Field(default_factory=list, description="Assumptions used in calculation")
