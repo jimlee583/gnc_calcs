@@ -16,10 +16,14 @@ from fastapi import APIRouter, HTTPException
 from app.schemas.gnc import (
     AttitudeInput,
     AttitudeOutput,
+    AttitudePropagationInput,
+    AttitudePropagationOutput,
     OrbitalInput,
     OrbitalOutput,
     OrbitalTrajectoryInput,
     OrbitalTrajectoryOutput,
+    QuaternionInput,
+    QuaternionOutput,
     RelativeMotionInput,
     RelativeMotionOutput,
     RelativeTrajectoryInput,
@@ -27,6 +31,7 @@ from app.schemas.gnc import (
 )
 from app.services.gnc.attitude_dynamics import compute_attitude_dynamics
 from app.services.gnc.orbital_dynamics import compute_orbital_dynamics
+from app.services.gnc.quaternion import compute_attitude_propagation, compute_quaternion_operations
 from app.services.gnc.relative_motion import compute_relative_motion
 from app.services.gnc.trajectory import generate_orbital_trajectory, generate_relative_trajectory
 
@@ -37,10 +42,10 @@ router = APIRouter()
 async def calculate_attitude_dynamics(inputs: AttitudeInput) -> AttitudeOutput:
     """
     Calculate rigid-body attitude dynamics using Euler's equations.
-    
+
     Computes instantaneous angular accelerations given the spacecraft's
     inertia properties, current angular velocity, and applied torques.
-    
+
     Returns angular accelerations and derived quantities including
     rotational kinetic energy and angular momentum magnitude.
     """
@@ -50,6 +55,54 @@ async def calculate_attitude_dynamics(inputs: AttitudeInput) -> AttitudeOutput:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Calculation error: {str(e)}")
+
+
+@router.post("/attitude/quaternion", response_model=QuaternionOutput)
+async def calculate_quaternion_operations(inputs: QuaternionInput) -> QuaternionOutput:
+    """
+    Perform quaternion operations and conversions.
+
+    Takes a quaternion (optionally with angular velocity) and returns:
+    - Normalized quaternion
+    - Quaternion time derivative (if angular velocity provided)
+    - Equivalent Euler angles (3-2-1 sequence)
+    - Direction Cosine Matrix (DCM)
+
+    The quaternion convention is scalar-first: q = [q0, q1, q2, q3]
+    where q0 is the scalar part and [q1, q2, q3] is the vector part.
+    """
+    try:
+        return compute_quaternion_operations(inputs)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Calculation error: {str(e)}")
+
+
+@router.post("/attitude/propagate", response_model=AttitudePropagationOutput)
+async def propagate_attitude(inputs: AttitudePropagationInput) -> AttitudePropagationOutput:
+    """
+    Propagate spacecraft attitude over time.
+
+    Integrates both quaternion kinematics and Euler's rotational dynamics
+    using 4th-order Runge-Kutta (RK4) integration.
+
+    Returns a time history of:
+    - Quaternion attitude state
+    - Angular velocity
+    - Euler angles (for visualization)
+    - Rotational kinetic energy
+    - Angular momentum magnitude
+
+    For torque-free motion, also reports conservation errors to assess
+    integration accuracy.
+    """
+    try:
+        return compute_attitude_propagation(inputs)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Propagation error: {str(e)}")
 
 
 @router.post("/orbit", response_model=OrbitalOutput)

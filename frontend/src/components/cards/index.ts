@@ -8,3 +8,4 @@ export { GncCard, CardSection, CardInput, CardOutput, CardButton } from './GncCa
 export { AttitudeDynamicsCard } from './AttitudeDynamicsCard';
 export { OrbitalMotionCard } from './OrbitalMotionCard';
 export { RelativeMotionCard } from './RelativeMotionCard';
+export { QuaternionAttitudeCard } from './QuaternionAttitudeCard';

@@ -20,9 +20,11 @@ Assumptions:
     - Rigid body (no flexure)
     - Principal axes aligned with body frame
     - No products of inertia (diagonal inertia tensor)
-    
+
+See Also:
+    - quaternion.py: Quaternion attitude representation and propagation
+
 TODO: Add support for non-principal axis inertia tensors
-TODO: Add quaternion kinematics for attitude propagation
 TODO: Add gravity gradient torque model
 """
 

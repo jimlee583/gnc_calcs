@@ -225,6 +225,161 @@ export interface RelativeTrajectoryOutput {
 }
 
 // =============================================================================
+// Quaternion Attitude Types
+// =============================================================================
+
+/**
+ * Euler angles in both radians and degrees.
+ */
+export interface EulerAngles {
+  roll_rad: number;
+  pitch_rad: number;
+  yaw_rad: number;
+  roll_deg: number;
+  pitch_deg: number;
+  yaw_deg: number;
+}
+
+/**
+ * Input for quaternion operations and conversions.
+ * Quaternion convention: q = [q0, q1, q2, q3] = [scalar, vector]
+ */
+export interface QuaternionInput {
+  /** Quaternion scalar component (w) */
+  q0: number;
+  /** Quaternion x component */
+  q1: number;
+  /** Quaternion y component */
+  q2: number;
+  /** Quaternion z component */
+  q3: number;
+  /** Angular velocity about X-axis [rad/s] */
+  omega_x?: number;
+  /** Angular velocity about Y-axis [rad/s] */
+  omega_y?: number;
+  /** Angular velocity about Z-axis [rad/s] */
+  omega_z?: number;
+}
+
+/**
+ * Output from quaternion operations.
+ */
+export interface QuaternionOutput {
+  /** Normalized quaternion scalar component */
+  q0: number;
+  /** Normalized quaternion x component */
+  q1: number;
+  /** Normalized quaternion y component */
+  q2: number;
+  /** Normalized quaternion z component */
+  q3: number;
+  /** Quaternion derivative scalar component [1/s] */
+  q0_dot: number;
+  /** Quaternion derivative x component [1/s] */
+  q1_dot: number;
+  /** Quaternion derivative y component [1/s] */
+  q2_dot: number;
+  /** Quaternion derivative z component [1/s] */
+  q3_dot: number;
+  /** Equivalent Euler angles (3-2-1 sequence) */
+  euler_angles: EulerAngles;
+  /** Direction Cosine Matrix (3x3, row-major flattened) */
+  dcm: number[];
+  /** Quaternion magnitude */
+  magnitude: number;
+  /** Whether input quaternion was already normalized */
+  is_normalized: boolean;
+  /** Conventions and assumptions */
+  assumptions: string[];
+}
+
+/**
+ * Input for attitude propagation over time.
+ */
+export interface AttitudePropagationInput {
+  /** Initial quaternion scalar component */
+  q0?: number;
+  /** Initial quaternion x component */
+  q1?: number;
+  /** Initial quaternion y component */
+  q2?: number;
+  /** Initial quaternion z component */
+  q3?: number;
+  /** Initial angular velocity about X-axis [rad/s] */
+  omega_x: number;
+  /** Initial angular velocity about Y-axis [rad/s] */
+  omega_y: number;
+  /** Initial angular velocity about Z-axis [rad/s] */
+  omega_z: number;
+  /** Principal moment of inertia about X-axis [kg·m²] */
+  inertia_x: number;
+  /** Principal moment of inertia about Y-axis [kg·m²] */
+  inertia_y: number;
+  /** Principal moment of inertia about Z-axis [kg·m²] */
+  inertia_z: number;
+  /** Applied torque about X-axis [N·m] */
+  torque_x?: number;
+  /** Applied torque about Y-axis [N·m] */
+  torque_y?: number;
+  /** Applied torque about Z-axis [N·m] */
+  torque_z?: number;
+  /** Total propagation time [s] */
+  propagation_time: number;
+  /** Number of integration steps */
+  num_steps?: number;
+}
+
+/**
+ * A single point in the attitude propagation time history.
+ */
+export interface AttitudeStatePoint {
+  /** Time [s] */
+  t: number;
+  /** Quaternion scalar component */
+  q0: number;
+  /** Quaternion x component */
+  q1: number;
+  /** Quaternion y component */
+  q2: number;
+  /** Quaternion z component */
+  q3: number;
+  /** Angular velocity about X-axis [rad/s] */
+  omega_x: number;
+  /** Angular velocity about Y-axis [rad/s] */
+  omega_y: number;
+  /** Angular velocity about Z-axis [rad/s] */
+  omega_z: number;
+  /** Roll angle [deg] */
+  roll_deg: number;
+  /** Pitch angle [deg] */
+  pitch_deg: number;
+  /** Yaw angle [deg] */
+  yaw_deg: number;
+  /** Rotational kinetic energy [J] */
+  rotational_kinetic_energy: number;
+  /** Angular momentum magnitude [kg·m²/s] */
+  angular_momentum_magnitude: number;
+}
+
+/**
+ * Output from attitude propagation.
+ */
+export interface AttitudePropagationOutput {
+  /** Time history of attitude states */
+  states: AttitudeStatePoint[];
+  /** Integration time step [s] */
+  time_step: number;
+  /** Integration method used */
+  integration_method: string;
+  /** Relative error in energy conservation (torque-free only) */
+  energy_conservation_error: number | null;
+  /** Relative error in momentum conservation (torque-free only) */
+  momentum_conservation_error: number | null;
+  /** Assumptions used in calculation */
+  assumptions: string[];
+}
+
+// =============================================================================
 // API Error Type
 // =============================================================================
 

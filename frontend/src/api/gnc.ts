@@ -9,10 +9,14 @@
 import type {
   AttitudeInput,
   AttitudeOutput,
+  AttitudePropagationInput,
+  AttitudePropagationOutput,
   OrbitalInput,
   OrbitalOutput,
   OrbitalTrajectoryInput,
   OrbitalTrajectoryOutput,
+  QuaternionInput,
+  QuaternionOutput,
   RelativeMotionInput,
   RelativeMotionOutput,
   RelativeTrajectoryInput,
@@ -96,4 +100,28 @@ export async function getRelativeTrajectory(
   input: RelativeTrajectoryInput
 ): Promise<RelativeTrajectoryOutput> {
   return apiCall<RelativeTrajectoryInput, RelativeTrajectoryOutput>('/relative/trajectory', input);
+}
+
+/**
+ * Perform quaternion operations and conversions.
+ *
+ * Takes a quaternion (optionally with angular velocity) and returns
+ * normalized quaternion, Euler angles, and DCM.
+ */
+export async function calculateQuaternion(
+  input: QuaternionInput
+): Promise<QuaternionOutput> {
+  return apiCall<QuaternionInput, QuaternionOutput>('/attitude/quaternion', input);
+}
+
+/**
+ * Propagate spacecraft attitude over time using RK4 integration.
+ *
+ * Returns a time history of attitude states including quaternion,
+ * angular velocity, Euler angles, and conservation quantities.
+ */
+export async function propagateAttitude(
+  input: AttitudePropagationInput
+): Promise<AttitudePropagationOutput> {
+  return apiCall<AttitudePropagationInput, AttitudePropagationOutput>('/attitude/propagate', input);
 }

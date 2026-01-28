@@ -1,6 +1,7 @@
 import {
   AttitudeDynamicsCard,
   OrbitalMotionCard,
+  QuaternionAttitudeCard,
   RelativeMotionCard,
 } from '../components/cards';
 import styles from './Dashboard.module.css';
@@ -62,6 +63,7 @@ export default function Dashboard() {
 
         <div className={styles.cardGrid}>
           <AttitudeDynamicsCard />
+          <QuaternionAttitudeCard />
           <OrbitalMotionCard />
           <RelativeMotionCard />
         </div>
